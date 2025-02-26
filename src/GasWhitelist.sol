@@ -11,7 +11,6 @@ library GasWhitelist {
     struct WhitelistStorage {
         mapping(address => uint256) whitelist;
         mapping(address => uint256) whitelistAmounts;
-        mapping(address => bool) whitelistStatus;
     }
 
     function addToWhitelist(
@@ -29,10 +28,9 @@ library GasWhitelist {
         }
         if (!isAdmin) revert NotAdminOrOwner();
         if (_tier >= 255) revert InvalidTier();
-
-        uint256 tier = _tier > 3 ? 3 : (_tier == 1 ? 1 : (_tier > 0 ? 2 : 0));
         
-        self.whitelist[_userAddrs] = tier;
+        self.whitelist[_userAddrs] = _tier > 3 ? 3 : _tier;
+
         emit AddedToWhitelist(_userAddrs, _tier);
     }
 
@@ -50,7 +48,6 @@ library GasWhitelist {
         balances[_recipient] += adjustedAmount;
         
         self.whitelistAmounts[sender] = _amount;
-        self.whitelistStatus[sender] = true;
         
         emit WhiteListTransfer(_recipient);
     }
@@ -60,6 +57,6 @@ library GasWhitelist {
         view 
         returns (bool, uint256) 
     {
-        return (self.whitelistStatus[sender], self.whitelistAmounts[sender]);
+        return (true, self.whitelistAmounts[sender]);
     }
 } 
